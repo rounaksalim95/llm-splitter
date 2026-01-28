@@ -35,6 +35,19 @@ describe('Storage', () => {
       expect(data).toEqual(DEFAULT_STORAGE_DATA);
     });
 
+    it('should return a fresh copy that does not mutate defaults', async () => {
+      // Get data when storage is empty (returns defaults)
+      const data = await getStorageData();
+
+      // Mutate the returned data
+      data.queryHistory.push('mutated');
+      data.settings.maxHistoryItems = 999;
+
+      // Verify DEFAULT_STORAGE_DATA was not mutated
+      expect(DEFAULT_STORAGE_DATA.queryHistory).toEqual([]);
+      expect(DEFAULT_STORAGE_DATA.settings.maxHistoryItems).toBe(50);
+    });
+
     it('should return stored data when available', async () => {
       const customData: StorageData = {
         ...DEFAULT_STORAGE_DATA,

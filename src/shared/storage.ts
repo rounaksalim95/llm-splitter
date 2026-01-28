@@ -17,6 +17,18 @@ export const DEFAULT_STORAGE_DATA: StorageData = {
 const STORAGE_KEY = 'storageData';
 
 /**
+ * Creates a fresh copy of the default storage data.
+ * This prevents mutation of the shared DEFAULT_STORAGE_DATA constant.
+ */
+function createDefaultStorageData(): StorageData {
+  return {
+    providers: DEFAULT_PROVIDERS.map((p) => ({ ...p })),
+    queryHistory: [],
+    settings: { ...DEFAULT_STORAGE_DATA.settings },
+  };
+}
+
+/**
  * Retrieves all storage data, merging with defaults for missing fields
  */
 export async function getStorageData(): Promise<StorageData> {
@@ -24,13 +36,14 @@ export async function getStorageData(): Promise<StorageData> {
   const stored = result[STORAGE_KEY] as Partial<StorageData> | undefined;
 
   if (!stored) {
-    return DEFAULT_STORAGE_DATA;
+    // Return a fresh copy to prevent mutation of defaults
+    return createDefaultStorageData();
   }
 
-  // Merge with defaults to ensure all fields exist
+  // Merge with defaults to ensure all fields exist, using fresh copies
   return {
-    providers: stored.providers ?? DEFAULT_STORAGE_DATA.providers,
-    queryHistory: stored.queryHistory ?? DEFAULT_STORAGE_DATA.queryHistory,
+    providers: stored.providers ?? DEFAULT_PROVIDERS.map((p) => ({ ...p })),
+    queryHistory: stored.queryHistory ? [...stored.queryHistory] : [],
     settings: {
       ...DEFAULT_STORAGE_DATA.settings,
       ...stored.settings,
