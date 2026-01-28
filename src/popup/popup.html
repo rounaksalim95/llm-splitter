@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LLM Splitter</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="popup-container">
+      <header class="popup-header">
+        <h1>LLM Splitter</h1>
+        <button id="settings-btn" class="icon-btn" title="Settings">⚙️</button>
+      </header>
+
+      <main class="popup-main">
+        <div class="query-section">
+          <label for="query-input">Your Query</label>
+          <textarea
+            id="query-input"
+            placeholder="Enter your query here..."
+            rows="4"
+            autofocus
+          ></textarea>
+        </div>
+
+        <div class="history-section">
+          <select id="history-select">
+            <option value="">Select from history...</option>
+          </select>
+        </div>
+
+        <div class="providers-section">
+          <label>Send to:</label>
+          <div id="providers-container"></div>
+        </div>
+
+        <div class="submit-section">
+          <button id="submit-btn" disabled>Submit to Selected</button>
+          <span class="shortcut-hint">Ctrl+Enter to submit</span>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="popup.ts"></script>
+  </body>
+</html>

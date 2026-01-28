@@ -7,7 +7,7 @@ LLM Splitter is a Chrome extension that allows users to input a single query and
 
 ### 1. Query Input
 - **Toolbar Popup**: Click extension icon to open popup with query input field
-- **Keyboard Shortcut**: Configurable hotkey (default: `Ctrl+Shift+Q` / `Cmd+Shift+Q`)
+- **Keyboard Shortcut**: Configurable hotkey (default: `Ctrl+Shift+Q` on all platforms)
 - **Query History**: Store recent queries with ability to select/modify previous queries
 
 ### 2. Provider Management
@@ -149,6 +149,9 @@ interface StorageData {
 - Query templates/presets
 - Sync query history across devices
 - Browser action context menu for selected text
+
+## TODO
+- [ ] **Customizable Keyboard Shortcut**: Add UI in settings page to allow users to configure the keyboard shortcut (currently hardcoded to `Ctrl+Shift+Q`). Note: `Cmd+Shift+Q` conflicts with macOS system shortcut for quitting applications.
 
 ## Verification Plan
 1. **Manual Testing**:
