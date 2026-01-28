@@ -1,11 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { handleMessage, handleQuerySubmit, setupListeners } from './service-worker';
+import { handleMessage, handleQuerySubmit, setupListeners, resetListeners } from './service-worker';
 import { mockChromeRuntime } from '../test/mocks/chrome';
 import type { QuerySubmitMessage } from '../shared/types';
 
 describe('Service Worker', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetListeners(); // Reset initialization state for clean tests
   });
 
   describe('handleMessage', () => {

@@ -175,12 +175,23 @@ export async function initializePopup(doc: Document = document): Promise<void> {
   updateSubmitButtonState(queryInput, providersContainer, submitBtn);
 }
 
-// Initialize when DOM is ready (skip in test environment)
-if (
-  typeof document !== 'undefined' &&
-  typeof process === 'undefined' &&
-  document.getElementById('providers-container')
-) {
+// Auto-initialize only when running in actual popup context.
+// Detection: check for popup-specific elements that only exist in popup.html
+function shouldAutoInitialize(): boolean {
+  if (typeof document === 'undefined') return false;
+
+  // All required popup elements must exist for auto-init
+  const requiredElements = [
+    'query-input',
+    'history-select',
+    'providers-container',
+    'submit-btn'
+  ];
+
+  return requiredElements.every(id => document.getElementById(id) !== null);
+}
+
+if (shouldAutoInitialize()) {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => initializePopup());
   } else {

@@ -56,10 +56,17 @@ export async function handleMessage(
   }
 }
 
+// Track initialization state to prevent duplicate listener registration
+let listenersInitialized = false;
+
 /**
- * Sets up all event listeners
+ * Sets up all event listeners. Idempotent - safe to call multiple times.
  */
 export function setupListeners(): void {
+  if (listenersInitialized) {
+    return;
+  }
+
   // Message listener
   chrome.runtime.onMessage.addListener(
     (
@@ -72,8 +79,17 @@ export function setupListeners(): void {
     }
   );
 
+  listenersInitialized = true;
+
   // Note: Keyboard shortcut to open popup is handled by Chrome's
   // built-in _execute_action command in manifest.json
+}
+
+/**
+ * Resets initialization state. Only for testing.
+ */
+export function resetListeners(): void {
+  listenersInitialized = false;
 }
 
 // Initialize listeners
