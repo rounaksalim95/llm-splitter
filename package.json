@@ -1,0 +1,40 @@
+{
+  "name": "llm-splitter",
+  "version": "0.1.0",
+  "description": "Chrome extension to split LLM queries across multiple providers",
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch --mode development",
+    "build": "bun run generate:icons && vite build",
+    "build:prod": "bun run generate:icons && vite build --mode production",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx",
+    "clean": "rm -rf dist",
+    "generate:icons": "bun run scripts/generate-icons.ts"
+  },
+  "keywords": [
+    "chrome-extension",
+    "llm",
+    "chatgpt",
+    "claude",
+    "gemini",
+    "grok"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.0.0-beta.28",
+    "@types/chrome": "^0.0.287",
+    "@typescript-eslint/eslint-plugin": "^8.22.0",
+    "@typescript-eslint/parser": "^8.22.0",
+    "@vitest/coverage-v8": "^3.0.4",
+    "eslint": "^9.19.0",
+    "happy-dom": "^16.7.2",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.11",
+    "vitest": "^3.0.4"
+  }
+}

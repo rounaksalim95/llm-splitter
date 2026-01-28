@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LLM Splitter - Settings</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <div class="options-container">
+      <header class="options-header">
+        <h1 class="options-title">LLM Splitter Settings</h1>
+        <p class="options-subtitle">Configure your LLM providers and preferences</p>
+      </header>
+
+      <main class="options-main">
+        <!-- Providers Section -->
+        <section class="settings-section">
+          <h2 class="section-title">Providers</h2>
+          <p class="section-description">Enable or disable LLM providers</p>
+          <div id="providers-list" class="providers-grid">
+            <!-- Providers will be populated by JavaScript -->
+          </div>
+        </section>
+
+        <!-- Window Layout Section -->
+        <section class="settings-section">
+          <h2 class="section-title">Window Layout</h2>
+          <p class="section-description">Choose how provider windows are arranged</p>
+          <div class="layout-options">
+            <label class="layout-option">
+              <input type="radio" name="layout" value="grid" />
+              <span class="layout-preview layout-grid">
+                <span></span><span></span><span></span><span></span>
+              </span>
+              <span class="layout-label">Grid</span>
+            </label>
+            <label class="layout-option">
+              <input type="radio" name="layout" value="horizontal" />
+              <span class="layout-preview layout-horizontal">
+                <span></span><span></span><span></span><span></span>
+              </span>
+              <span class="layout-label">Horizontal</span>
+            </label>
+            <label class="layout-option">
+              <input type="radio" name="layout" value="vertical" />
+              <span class="layout-preview layout-vertical">
+                <span></span><span></span><span></span><span></span>
+              </span>
+              <span class="layout-label">Vertical</span>
+            </label>
+          </div>
+        </section>
+
+        <!-- Appearance Section -->
+        <section class="settings-section">
+          <h2 class="section-title">Appearance</h2>
+          <p class="section-description">Customize the extension theme</p>
+          <div class="theme-options">
+            <label class="theme-option">
+              <input type="radio" name="theme" value="system" />
+              <span class="theme-label">System</span>
+            </label>
+            <label class="theme-option">
+              <input type="radio" name="theme" value="light" />
+              <span class="theme-label">Light</span>
+            </label>
+            <label class="theme-option">
+              <input type="radio" name="theme" value="dark" />
+              <span class="theme-label">Dark</span>
+            </label>
+          </div>
+        </section>
+      </main>
+
+      <footer class="options-footer">
+        <button id="save-btn" class="save-button">Save Settings</button>
+        <p id="status-message" class="status-message"></p>
+      </footer>
+    </div>
+
+    <script type="module" src="options.ts"></script>
+  </body>
+</html>
