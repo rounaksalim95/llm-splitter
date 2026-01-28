@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   DEFAULT_STORAGE_DATA,
+  getDefaults,
   getStorageData,
   setStorageData,
   addQueryToHistory,
@@ -26,6 +27,37 @@ describe('Storage', () => {
       expect(DEFAULT_STORAGE_DATA.settings.maxHistoryItems).toBe(50);
       expect(DEFAULT_STORAGE_DATA.settings.keyboardShortcut).toBe('Ctrl+Shift+Q');
       expect(DEFAULT_STORAGE_DATA.settings.defaultLayout).toBe('grid');
+    });
+  });
+
+  describe('getDefaults', () => {
+    it('should return storage data with default values', () => {
+      const defaults = getDefaults();
+      expect(defaults.providers).toBeDefined();
+      expect(defaults.queryHistory).toEqual([]);
+      expect(defaults.settings.maxHistoryItems).toBe(50);
+    });
+
+    it('should return a fresh copy each time', () => {
+      const defaults1 = getDefaults();
+      const defaults2 = getDefaults();
+
+      // Mutate the first copy
+      defaults1.queryHistory.push('mutated');
+      defaults1.providers[0].name = 'Modified';
+
+      // Second copy should be unaffected
+      expect(defaults2.queryHistory).toEqual([]);
+      expect(defaults2.providers[0].name).not.toBe('Modified');
+    });
+
+    it('should not mutate DEFAULT_STORAGE_DATA', () => {
+      const defaults = getDefaults();
+      defaults.queryHistory.push('mutated');
+      defaults.settings.maxHistoryItems = 999;
+
+      expect(DEFAULT_STORAGE_DATA.queryHistory).toEqual([]);
+      expect(DEFAULT_STORAGE_DATA.settings.maxHistoryItems).toBe(50);
     });
   });
 

@@ -3,7 +3,13 @@
   "name": "LLM Splitter",
   "version": "0.1.0",
   "description": "Split your queries across multiple LLM providers",
-  "permissions": ["storage", "activeTab"],
+  "permissions": ["storage", "activeTab", "scripting", "tabs", "system.display"],
+  "host_permissions": [
+    "https://chatgpt.com/*",
+    "https://claude.ai/*",
+    "https://gemini.google.com/*",
+    "https://grok.com/*"
+  ],
   "action": {
     "default_popup": "src/popup/popup.html",
     "default_icon": {
@@ -31,5 +37,17 @@
     "32": "src/icons/icon32.png",
     "48": "src/icons/icon48.png",
     "128": "src/icons/icon128.png"
-  }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chatgpt.com/*",
+        "https://claude.ai/*",
+        "https://gemini.google.com/*",
+        "https://grok.com/*"
+      ],
+      "js": ["src/content-scripts/query-injector.ts"],
+      "run_at": "document_idle"
+    }
+  ]
 }

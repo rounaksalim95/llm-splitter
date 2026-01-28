@@ -54,9 +54,45 @@ export interface QuerySubmitMessage {
 }
 
 /**
+ * Message sent from service worker to content script to inject a query
+ */
+export interface InjectQueryMessage {
+  type: 'INJECT_QUERY';
+  payload: {
+    query: string;
+    inputSelector: string;
+    submitSelector: string;
+  };
+}
+
+/**
+ * Message sent to check if content script is ready
+ */
+export interface PingMessage {
+  type: 'PING';
+}
+
+/**
+ * Response to PING message confirming content script is ready
+ */
+export interface PongMessage {
+  type: 'PONG';
+}
+
+/**
+ * Window position configuration
+ */
+export interface WindowPosition {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+}
+
+/**
  * Generic message type for extension communication
  */
-export type ExtensionMessage = QuerySubmitMessage;
+export type ExtensionMessage = QuerySubmitMessage | InjectQueryMessage | PingMessage;
 
 /**
  * Response from message handlers

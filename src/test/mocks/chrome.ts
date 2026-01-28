@@ -76,10 +76,23 @@ export const mockChromeCommands = {
 
 // Mock Chrome windows API
 export const mockChromeWindows = {
-  create: vi.fn(() => Promise.resolve({ id: 1 })),
+  create: vi.fn(() =>
+    Promise.resolve({
+      id: 1,
+      tabs: [{ id: 1, status: 'complete' }],
+    })
+  ),
   update: vi.fn(() => Promise.resolve()),
   remove: vi.fn(() => Promise.resolve()),
-  getCurrent: vi.fn(() => Promise.resolve({ id: 1 })),
+  getCurrent: vi.fn(() =>
+    Promise.resolve({
+      id: 1,
+      left: 0,
+      top: 0,
+      width: 1920,
+      height: 1080,
+    })
+  ),
 };
 
 // Mock Chrome tabs API
@@ -87,7 +100,14 @@ export const mockChromeTabs = {
   create: vi.fn(() => Promise.resolve({ id: 1 })),
   query: vi.fn(() => Promise.resolve([])),
   update: vi.fn(() => Promise.resolve()),
-  sendMessage: vi.fn(() => Promise.resolve()),
+  sendMessage: vi.fn((tabId: number, message: { type: string }) => {
+    // Handle PING messages by returning PONG
+    if (message.type === 'PING') {
+      return Promise.resolve({ type: 'PONG' });
+    }
+    return Promise.resolve({ success: true });
+  }),
+  get: vi.fn(() => Promise.resolve({ id: 1, status: 'complete' })),
 };
 
 // Mock Chrome action API
@@ -98,6 +118,31 @@ export const mockChromeAction = {
   setBadgeBackgroundColor: vi.fn(() => Promise.resolve()),
 };
 
+// Mock Chrome system.display API
+export const mockChromeSystemDisplay = {
+  getInfo: vi.fn(() =>
+    Promise.resolve([
+      {
+        id: 'display-1',
+        name: 'Built-in Display',
+        isPrimary: true,
+        workArea: {
+          left: 0,
+          top: 0,
+          width: 1920,
+          height: 1080,
+        },
+        bounds: {
+          left: 0,
+          top: 0,
+          width: 1920,
+          height: 1080,
+        },
+      },
+    ])
+  ),
+};
+
 // Combined Chrome mock
 export const mockChrome = {
   storage: mockChromeStorage,
@@ -106,6 +151,9 @@ export const mockChrome = {
   windows: mockChromeWindows,
   tabs: mockChromeTabs,
   action: mockChromeAction,
+  system: {
+    display: mockChromeSystemDisplay,
+  },
 };
 
 // Helper to reset all mocks and storage
