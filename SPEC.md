@@ -150,8 +150,33 @@ interface StorageData {
 - Sync query history across devices
 - Browser action context menu for selected text
 
+## Development Phases
+
+### Phase 1: Query Input (Complete)
+- Popup UI with query textarea, provider checkboxes, history dropdown
+- Query history with deduplication and persistence
+- Keyboard shortcut (Ctrl+Shift+Q) to open popup
+- Service worker receives SUBMIT_QUERY messages
+
+### Phase 2: Window Management + Query Execution (Complete)
+- Window management: Opens provider windows arranged side-by-side
+- Dynamic layout based on provider count (50/50, 33/33/33, 25/25/25/25, or 2x2 grid)
+- Content script injection for query auto-fill
+- Provider-specific text entry handling:
+  - Standard textarea/input (ChatGPT, Grok)
+  - ContentEditable div (Claude)
+  - Quill editor (Gemini)
+- Auto-submit after query injection
+
+### Phase 3: Options Page (Future)
+- Provider management UI for adding/editing/removing providers
+- Settings for default layout preference
+- Query history management
+- Customizable keyboard shortcut UI
+
 ## TODO
 - [ ] **Customizable Keyboard Shortcut**: Add UI in settings page to allow users to configure the keyboard shortcut (currently hardcoded to `Ctrl+Shift+Q`). Note: `Cmd+Shift+Q` conflicts with macOS system shortcut for quitting applications.
+- [ ] **Options Page**: Implement settings UI for provider management
 
 ## Verification Plan
 1. **Manual Testing**:

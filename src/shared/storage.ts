@@ -17,6 +17,18 @@ export const DEFAULT_STORAGE_DATA: StorageData = {
 const STORAGE_KEY = 'storageData';
 
 /**
+ * Returns default storage data for synchronous access.
+ * Use getStorageData() for async access with persistence.
+ */
+export function getDefaults(): StorageData {
+  return {
+    providers: DEFAULT_PROVIDERS.map((p) => ({ ...p })),
+    queryHistory: [],
+    settings: { ...DEFAULT_STORAGE_DATA.settings },
+  };
+}
+
+/**
  * Creates a fresh copy of the default storage data.
  * This prevents mutation of the shared DEFAULT_STORAGE_DATA constant.
  */

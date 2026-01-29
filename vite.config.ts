@@ -9,6 +9,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         popup: 'src/popup/popup.html',
+        'query-injector': 'src/content-scripts/query-injector.ts',
       },
     },
   },
