@@ -123,6 +123,14 @@ export async function initializePopup(doc: Document = document): Promise<void> {
   const historySelect = doc.getElementById('history-select') as HTMLSelectElement;
   const providersContainer = doc.getElementById('providers-container') as HTMLElement;
   const submitBtn = doc.getElementById('submit-btn') as HTMLButtonElement;
+  const settingsBtn = doc.getElementById('settings-btn') as HTMLButtonElement;
+
+  // Settings button opens options page
+  if (settingsBtn) {
+    settingsBtn.addEventListener('click', () => {
+      chrome.runtime.openOptionsPage();
+    });
+  }
 
   // Load data from storage
   const data = await getStorageData();

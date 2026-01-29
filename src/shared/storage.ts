@@ -123,3 +123,38 @@ export async function updateSettings(updates: Partial<Settings>): Promise<void> 
   data.settings = { ...data.settings, ...updates };
   await setStorageData(data);
 }
+
+/**
+ * Updates the order of providers based on an array of provider IDs
+ */
+export async function updateProviderOrder(orderedIds: string[]): Promise<void> {
+  const data = await getStorageData();
+
+  // Create a map for quick lookup
+  const providerMap = new Map(data.providers.map(p => [p.id, p]));
+
+  // Reorder providers based on the ordered IDs
+  const reorderedProviders = orderedIds
+    .map(id => providerMap.get(id))
+    .filter((p): p is NonNullable<typeof p> => p !== undefined);
+
+  // Add any providers that weren't in the orderedIds (shouldn't happen, but safety)
+  const orderedIdSet = new Set(orderedIds);
+  const remainingProviders = data.providers.filter(p => !orderedIdSet.has(p.id));
+
+  data.providers = [...reorderedProviders, ...remainingProviders];
+  await setStorageData(data);
+}
+
+/**
+ * Toggles a provider's enabled state
+ */
+export async function toggleProvider(id: string, enabled: boolean): Promise<void> {
+  const data = await getStorageData();
+
+  const provider = data.providers.find(p => p.id === id);
+  if (provider) {
+    provider.enabled = enabled;
+    await setStorageData(data);
+  }
+}

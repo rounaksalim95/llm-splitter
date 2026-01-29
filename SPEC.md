@@ -52,9 +52,9 @@ llm-splitter/
 │   │   ├── popup.ts             # Popup logic
 │   │   └── popup.css            # Popup styles
 │   ├── options/
-│   │   ├── options.html         # Settings page
-│   │   ├── options.ts           # Settings logic
-│   │   └── options.css          # Settings styles
+│   │   ├── options.html         # Settings page (full-page, opens in tab)
+│   │   ├── options.ts           # Settings logic (drag-drop, toggles, history)
+│   │   └── options.css          # Settings styles (CSS vars, dark mode)
 │   ├── content-scripts/
 │   │   ├── injector.ts          # Generic content script loader
 │   │   └── providers/
@@ -130,10 +130,9 @@ interface StorageData {
 ### Settings Flow
 1. User right-clicks extension icon → "Options" (or clicks gear in popup)
 2. Settings page shows:
-   - Provider list with enable/disable toggles
-   - "Add Provider" form for custom providers
-   - Query history management
-   - Keyboard shortcut configuration
+   - Provider list with enable/disable toggles and drag-to-reorder
+   - Query history list with "Clear History" button
+   - Current keyboard shortcut with link to Chrome's shortcuts page
 
 ## Chrome APIs Used
 - `chrome.windows.create()` - Create positioned windows
@@ -144,6 +143,7 @@ interface StorageData {
 - `chrome.commands` - Keyboard shortcuts
 
 ## Future Enhancements (Post-V1)
+- Add/edit/delete custom providers via options page
 - Model/mode selection per provider (e.g., GPT-4, Claude Opus, thinking mode)
 - Response comparison view (aggregate responses in single window)
 - Query templates/presets
@@ -168,15 +168,16 @@ interface StorageData {
   - Quill editor (Gemini)
 - Auto-submit after query injection
 
-### Phase 3: Options Page (Future)
-- Provider management UI for adding/editing/removing providers
-- Settings for default layout preference
-- Query history management
-- Customizable keyboard shortcut UI
+### Phase 3: Options Page (Complete)
+- Full-page options UI with system theme support (light/dark via `prefers-color-scheme`)
+- Provider management: toggle enable/disable and drag-and-drop reorder
+- Query history viewing and clear all functionality
+- Keyboard shortcut display with link to Chrome's extension shortcuts page
+- Settings button in popup opens options page
 
 ## TODO
-- [ ] **Customizable Keyboard Shortcut**: Add UI in settings page to allow users to configure the keyboard shortcut (currently hardcoded to `Ctrl+Shift+Q`). Note: `Cmd+Shift+Q` conflicts with macOS system shortcut for quitting applications.
-- [ ] **Options Page**: Implement settings UI for provider management
+- [ ] **Customizable Keyboard Shortcut**: Add UI in settings page to allow users to configure the keyboard shortcut (currently hardcoded to `Ctrl+Shift+Q`). Note: `Cmd+Shift+Q` conflicts with macOS system shortcut for quitting applications. Currently, users can change shortcuts via Chrome's built-in `chrome://extensions/shortcuts` page.
+- [x] **Options Page**: Implement settings UI for provider management (toggle, reorder, query history, theme support)
 
 ## Verification Plan
 1. **Manual Testing**:
@@ -186,8 +187,11 @@ interface StorageData {
    - Verify window positioning on single and multi-monitor setups
    - Test provider toggle in popup
    - Test settings page and persistence
+   - Test options page: provider toggle/reorder, clear history, theme switching
 2. **Edge Cases**:
    - Provider not logged in (should still open)
    - Very long queries
    - Special characters in queries
    - Rapid successive queries
+   - Empty query history (shows "No queries yet")
+   - All providers disabled (shows warning)
