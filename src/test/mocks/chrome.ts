@@ -74,15 +74,51 @@ export const mockChromeCommands = {
   },
 };
 
+// Track window positions for verification
+let windowIdCounter = 1;
+const windowPositions: Map<number, { left: number; top: number; width: number; height: number; state: string }> = new Map();
+
 // Mock Chrome windows API
 export const mockChromeWindows = {
-  create: vi.fn(() =>
-    Promise.resolve({
-      id: 1,
-      tabs: [{ id: 1, status: 'complete' }],
-    })
-  ),
-  update: vi.fn(() => Promise.resolve()),
+  create: vi.fn((options: { url?: string; left?: number; top?: number; width?: number; height?: number; state?: string }) => {
+    const windowId = windowIdCounter++;
+    // Store initial position from create options
+    windowPositions.set(windowId, {
+      left: options.left ?? 0,
+      top: options.top ?? 0,
+      width: options.width ?? 800,
+      height: options.height ?? 600,
+      state: options.state ?? 'normal',
+    });
+    return Promise.resolve({
+      id: windowId,
+      tabs: [{ id: windowId, status: 'complete' }],
+      left: options.left ?? 0,
+      top: options.top ?? 0,
+      width: options.width ?? 800,
+      height: options.height ?? 600,
+      state: options.state ?? 'normal',
+    });
+  }),
+  update: vi.fn((windowId: number, updateInfo: { left?: number; top?: number; width?: number; height?: number; state?: string }) => {
+    // Update stored position
+    const current = windowPositions.get(windowId) || { left: 0, top: 0, width: 800, height: 600, state: 'normal' };
+    windowPositions.set(windowId, {
+      left: updateInfo.left ?? current.left,
+      top: updateInfo.top ?? current.top,
+      width: updateInfo.width ?? current.width,
+      height: updateInfo.height ?? current.height,
+      state: updateInfo.state ?? current.state,
+    });
+    return Promise.resolve();
+  }),
+  get: vi.fn((windowId: number) => {
+    const pos = windowPositions.get(windowId) || { left: 0, top: 0, width: 800, height: 600, state: 'normal' };
+    return Promise.resolve({
+      id: windowId,
+      ...pos,
+    });
+  }),
   remove: vi.fn(() => Promise.resolve()),
   getCurrent: vi.fn(() =>
     Promise.resolve({
@@ -94,6 +130,12 @@ export const mockChromeWindows = {
     })
   ),
 };
+
+// Reset window tracking (call in beforeEach)
+export function resetWindowTracking(): void {
+  windowIdCounter = 1;
+  windowPositions.clear();
+}
 
 // Mock Chrome tabs API
 export const mockChromeTabs = {
@@ -159,6 +201,7 @@ export const mockChrome = {
 // Helper to reset all mocks and storage
 export function resetChromeMocks(): void {
   mockStorageData = {};
+  resetWindowTracking();
   vi.clearAllMocks();
 }
 

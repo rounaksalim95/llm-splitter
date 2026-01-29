@@ -6,12 +6,14 @@ import {
   mockChromeTabs,
   mockChromeStorage,
   mockChromeSystemDisplay,
+  resetWindowTracking,
 } from '../test/mocks/chrome';
 import type { QuerySubmitMessage } from '../shared/types';
 
 describe('Service Worker', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    resetWindowTracking(); // Reset window ID counter and positions
     resetListeners(); // Reset initialization state for clean tests
   });
 
@@ -106,7 +108,7 @@ describe('Service Worker', () => {
       expect(mockChromeWindows.create).toHaveBeenCalledTimes(2);
     });
 
-    it('should position windows side by side for 2 providers', async () => {
+    it('should position windows side by side for 2 providers using windows.create with position params', async () => {
       const payload = {
         query: 'test query',
         providerIds: ['chatgpt', 'claude'],
@@ -114,16 +116,33 @@ describe('Service Worker', () => {
 
       await handleQuerySubmit(payload);
 
-      const calls = mockChromeWindows.create.mock.calls;
-      expect(calls).toHaveLength(2);
+      // Windows should be created with focused: false and position parameters
+      expect(mockChromeWindows.create).toHaveBeenCalledTimes(2);
+      const createCalls = mockChromeWindows.create.mock.calls;
 
-      // First window should be on the left
-      expect(calls[0][0].left).toBe(0);
-      // Second window should be on the right
-      expect(calls[1][0].left).toBeGreaterThan(0);
+      // Both should have focused: false and state: 'normal'
+      expect(createCalls[0][0].focused).toBe(false);
+      expect(createCalls[0][0].state).toBe('normal');
+      expect(createCalls[1][0].focused).toBe(false);
+      expect(createCalls[1][0].state).toBe('normal');
+
+      // First window should be on the left with position params
+      expect(createCalls[0][0].left).toBe(0);
+      expect(createCalls[0][0]).toHaveProperty('top');
+      expect(createCalls[0][0]).toHaveProperty('width');
+      expect(createCalls[0][0]).toHaveProperty('height');
+
+      // Second window should be on the right with position params
+      expect(createCalls[1][0].left).toBeGreaterThan(0);
+      expect(createCalls[1][0]).toHaveProperty('top');
+      expect(createCalls[1][0]).toHaveProperty('width');
+      expect(createCalls[1][0]).toHaveProperty('height');
+
+      // windows.get should be called for position verification
+      expect(mockChromeWindows.get).toHaveBeenCalled();
     });
 
-    it('should create windows with correct URLs', async () => {
+    it('should create windows with correct URLs and position params', async () => {
       const payload = {
         query: 'test query',
         providerIds: ['chatgpt', 'gemini'],
@@ -131,9 +150,22 @@ describe('Service Worker', () => {
 
       await handleQuerySubmit(payload);
 
-      const calls = mockChromeWindows.create.mock.calls;
-      expect(calls[0][0].url).toBe('https://chatgpt.com/');
-      expect(calls[1][0].url).toBe('https://gemini.google.com/app');
+      const createCalls = mockChromeWindows.create.mock.calls;
+      expect(createCalls[0][0].url).toBe('https://chatgpt.com/');
+      expect(createCalls[1][0].url).toBe('https://gemini.google.com/app');
+
+      // Verify windows.create was called with position info
+      expect(createCalls[0][0]).toHaveProperty('left');
+      expect(createCalls[0][0]).toHaveProperty('top');
+      expect(createCalls[0][0]).toHaveProperty('width');
+      expect(createCalls[0][0]).toHaveProperty('height');
+      expect(createCalls[1][0]).toHaveProperty('left');
+      expect(createCalls[1][0]).toHaveProperty('top');
+      expect(createCalls[1][0]).toHaveProperty('width');
+      expect(createCalls[1][0]).toHaveProperty('height');
+
+      // Verify windows.get was called to verify position
+      expect(mockChromeWindows.get).toHaveBeenCalled();
     });
 
     it('should send INJECT_QUERY message to each tab after load', async () => {
@@ -180,6 +212,54 @@ describe('Service Worker', () => {
       const response = await handleQuerySubmit(payload);
       expect(response.success).toBe(false);
       expect(response.error).toContain('No valid providers found');
+    });
+
+    it('should retry positioning if initial position is incorrect', async () => {
+      // Mock windows.get to return wrong position first, then correct position
+      let getCallCount = 0;
+      const originalGet = mockChromeWindows.get;
+      mockChromeWindows.get = vi.fn((windowId: number) => {
+        getCallCount++;
+        if (getCallCount === 1) {
+          // First call returns wrong position
+          return Promise.resolve({
+            id: windowId,
+            left: 100, // Wrong position
+            top: 100,
+            width: 500,
+            height: 400,
+            state: 'normal',
+          });
+        }
+        // Subsequent calls return correct position (after update)
+        return Promise.resolve({
+          id: windowId,
+          left: 0,
+          top: 0,
+          width: 1920,
+          height: 1080,
+          state: 'normal',
+        });
+      });
+
+      const payload = {
+        query: 'test query',
+        providerIds: ['chatgpt'],
+      };
+
+      await handleQuerySubmit(payload);
+
+      // windows.update should be called to correct the position
+      expect(mockChromeWindows.update).toHaveBeenCalled();
+      const updateCalls = mockChromeWindows.update.mock.calls;
+      // At least one update call should have position correction
+      const hasPositionUpdate = updateCalls.some((call: [number, { left?: number }]) =>
+        call[1].left !== undefined
+      );
+      expect(hasPositionUpdate).toBe(true);
+
+      // Restore original mock
+      mockChromeWindows.get = originalGet;
     });
 
     it('should trim query before sending to content script', async () => {

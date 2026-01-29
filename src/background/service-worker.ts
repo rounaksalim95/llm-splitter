@@ -37,10 +37,10 @@ function calculateWindowPositions(
 
     for (let i = 0; i < providerCount; i++) {
       positions.push({
-        left: screenLeft + i * windowWidth,
-        top: screenTop,
-        width: windowWidth,
-        height: screenHeight,
+        left: Math.round(screenLeft + i * windowWidth),
+        top: Math.round(screenTop),
+        width: Math.round(windowWidth),
+        height: Math.round(screenHeight),
       });
     }
   }
@@ -71,39 +71,126 @@ async function getScreenDimensions(): Promise<{ width: number; height: number; l
 }
 
 /**
- * Opens a window for a provider and injects the query
+ * Info about a created window, used to track windows during two-phase creation
  */
-async function openProviderWindow(
+interface CreatedWindow {
+  windowId: number;
+  tabId: number;
+  provider: Provider;
+}
+
+/**
+ * Verifies window position matches expected and corrects if needed.
+ * Returns true if position is correct (or was successfully corrected).
+ */
+async function verifyAndCorrectPosition(
+  windowId: number,
+  expected: WindowPosition,
+  maxRetries: number = 3
+): Promise<boolean> {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const actual = await chrome.windows.get(windowId);
+
+    // Check if position matches (with small tolerance for rounding)
+    const isCorrect =
+      Math.abs((actual.left ?? 0) - expected.left) <= 5 &&
+      Math.abs((actual.top ?? 0) - expected.top) <= 5 &&
+      Math.abs((actual.width ?? 0) - expected.width) <= 5 &&
+      Math.abs((actual.height ?? 0) - expected.height) <= 5;
+
+    if (isCorrect) {
+      console.log(`[DEBUG] Window ${windowId} position verified on attempt ${attempt + 1}`);
+      return true;
+    }
+
+    // Position incorrect - try to fix it
+    console.warn(`[DEBUG] Window ${windowId} position mismatch (attempt ${attempt + 1}):`, {
+      expected,
+      actual: { left: actual.left, top: actual.top, width: actual.width, height: actual.height },
+    });
+
+    await chrome.windows.update(windowId, {
+      left: expected.left,
+      top: expected.top,
+      width: expected.width,
+      height: expected.height,
+      state: 'normal',
+    });
+
+    // Small delay before re-checking
+    await new Promise(resolve => setTimeout(resolve, 100));
+  }
+
+  return false; // Failed after all retries
+}
+
+/**
+ * Phase 1: Creates and positions a window for a provider (without waiting for page load)
+ * This is fast and should complete quickly before any slow page loads interfere
+ */
+async function createAndPositionWindow(
   provider: Provider,
-  query: string,
   position: WindowPosition
-): Promise<void> {
-  // Create the window at the calculated position
+): Promise<CreatedWindow | null> {
+  // Create window WITH position parameters - most reliable for initial positioning
+  // Also include state: 'normal' to ensure position params are honored
+  // (Chrome docs: minimized/maximized/fullscreen states cannot be combined with position)
   const window = await chrome.windows.create({
     url: provider.newChatUrl,
+    type: 'normal',
+    focused: false,
+    state: 'normal',
     left: position.left,
     top: position.top,
     width: position.width,
     height: position.height,
-    type: 'normal',
   });
 
-  if (!window.tabs || window.tabs.length === 0) {
+  if (!window.id) {
     console.error(`Failed to create window for ${provider.name}`);
-    return;
+    return null;
   }
 
-  const tab = window.tabs[0];
-  if (!tab.id) {
-    console.error(`No tab ID for ${provider.name}`);
-    return;
+  console.log(`[DEBUG] Created window for ${provider.name}:`, {
+    windowId: window.id,
+    state: window.state,
+    returnedBounds: { left: window.left, top: window.top, width: window.width, height: window.height },
+    expectedPosition: position,
+  });
+
+  // Verify and correct position if needed (handles Chrome ignoring position params)
+  const positionOk = await verifyAndCorrectPosition(window.id, position);
+  if (!positionOk) {
+    console.warn(`[DEBUG] Could not achieve correct position for ${provider.name} after retries`);
   }
+
+  if (!window.tabs || window.tabs.length === 0 || !window.tabs[0].id) {
+    console.error(`Failed to create window with tabs for ${provider.name}`);
+    return null;
+  }
+
+  return {
+    windowId: window.id,
+    tabId: window.tabs[0].id,
+    provider,
+  };
+}
+
+/**
+ * Phase 2: Waits for a tab to load and injects the query
+ * This can be slow (depends on site load time) and runs after all windows are positioned
+ */
+async function waitAndInjectQuery(
+  createdWindow: CreatedWindow,
+  query: string
+): Promise<void> {
+  const { tabId, provider } = createdWindow;
 
   // Wait for the tab to finish loading
-  await waitForTabLoad(tab.id);
+  await waitForTabLoad(tabId);
 
   // Wait for content script to be ready
-  const isReady = await waitForContentScript(tab.id);
+  const isReady = await waitForContentScript(tabId);
   if (!isReady) {
     console.error(`Content script not ready for ${provider.name}`);
     return;
@@ -120,7 +207,7 @@ async function openProviderWindow(
   };
 
   try {
-    await chrome.tabs.sendMessage(tab.id, message);
+    await chrome.tabs.sendMessage(tabId, message);
   } catch (error) {
     console.error(`Failed to send message to ${provider.name}:`, error);
   }
@@ -226,6 +313,8 @@ export async function handleQuerySubmit(payload: {
 
   // Get screen dimensions and calculate positions
   const screenDimensions = await getScreenDimensions();
+  console.log('[DEBUG] Screen dimensions:', screenDimensions);
+
   const settings = storageData.settings || getDefaults().settings;
   const layout = settings.defaultLayout;
 
@@ -234,14 +323,30 @@ export async function handleQuerySubmit(payload: {
     selectedProviders.length,
     layout
   );
+  console.log('[DEBUG] Calculated positions:', positions);
 
-  // Open windows for each provider
-  const openPromises = selectedProviders.map((provider, index) =>
-    openProviderWindow(provider, query.trim(), positions[index])
-  );
-
+  // Two-phase window creation to prevent positioning race conditions:
+  // Phase 1: Create and position ALL windows quickly (before slow page loads interfere)
+  // Phase 2: Wait for tabs to load and inject queries (can be slow, done in parallel)
   try {
-    await Promise.all(openPromises);
+    // Phase 1: Create and position all windows
+    const createdWindows: CreatedWindow[] = [];
+    for (let i = 0; i < selectedProviders.length; i++) {
+      const created = await createAndPositionWindow(selectedProviders[i], positions[i]);
+      if (created) {
+        createdWindows.push(created);
+      }
+      // Small delay between windows for Chrome to stabilize positioning
+      if (i < selectedProviders.length - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+    }
+
+    // Phase 2: Wait for tabs to load and inject queries (in parallel for speed)
+    await Promise.all(
+      createdWindows.map((cw) => waitAndInjectQuery(cw, query.trim()))
+    );
+
     return { success: true };
   } catch (error) {
     return {
