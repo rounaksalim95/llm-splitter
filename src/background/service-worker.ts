@@ -6,10 +6,9 @@ import type {
   QuerySubmitMessage,
   WindowPosition,
   Provider,
-  StorageData,
 } from '../shared/types';
 import { DEFAULT_PROVIDERS, getProviderById } from '../shared/providers';
-import { getDefaults } from '../shared/storage';
+import { getStorageData } from '../shared/storage';
 
 /**
  * Calculates window positions for arranging provider windows side-by-side
@@ -291,9 +290,9 @@ export async function handleQuerySubmit(payload: {
     };
   }
 
-  // Get storage data for provider configs
-  const storageData = await chrome.storage.sync.get(null) as Partial<StorageData>;
-  const providers = storageData.providers || getDefaults().providers;
+  // Get storage data for provider configs (uses chrome.storage.local like the rest of the app)
+  const storageData = await getStorageData();
+  const providers = storageData.providers;
 
   // Get selected providers
   const selectedProviders: Provider[] = [];
@@ -315,7 +314,7 @@ export async function handleQuerySubmit(payload: {
   const screenDimensions = await getScreenDimensions();
   console.log('[DEBUG] Screen dimensions:', screenDimensions);
 
-  const settings = storageData.settings || getDefaults().settings;
+  const settings = storageData.settings;
   const layout = settings.defaultLayout;
 
   const positions = calculateWindowPositions(

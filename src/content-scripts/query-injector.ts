@@ -1,6 +1,20 @@
 import type { InjectQueryMessage, MessageResponse, PingMessage, PongMessage } from '../shared/types';
 
 /**
+ * Escapes HTML special characters to prevent XSS attacks
+ */
+function escapeHtml(text: string): string {
+  const htmlEscapes: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;',
+  };
+  return text.replace(/[&<>"']/g, (char) => htmlEscapes[char]);
+}
+
+/**
  * Tries multiple selectors in order and returns the first match
  */
 function queryWithMultipleSelectors(selectors: string): Element | null {
@@ -136,8 +150,8 @@ function enterText(element: Element, text: string): void {
     // Quill editor (Gemini)
     element.focus();
     const htmlElement = element as HTMLElement;
-    // Quill uses <p> tags for content
-    htmlElement.innerHTML = `<p>${text}</p>`;
+    // Quill uses <p> tags for content - escape HTML to prevent XSS
+    htmlElement.innerHTML = `<p>${escapeHtml(text)}</p>`;
     element.dispatchEvent(new InputEvent('input', { bubbles: true }));
   } else {
     // Fallback: try setting textContent
