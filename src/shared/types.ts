@@ -90,9 +90,23 @@ export interface WindowPosition {
 }
 
 /**
+ * Message sent to get the selected text for compose page
+ */
+export interface GetSelectedTextMessage {
+  type: 'GET_SELECTED_TEXT';
+}
+
+/**
+ * Response containing the selected text
+ */
+export interface SelectedTextResponse {
+  selectedText: string;
+}
+
+/**
  * Generic message type for extension communication
  */
-export type ExtensionMessage = QuerySubmitMessage | InjectQueryMessage | PingMessage;
+export type ExtensionMessage = QuerySubmitMessage | InjectQueryMessage | PingMessage | GetSelectedTextMessage;
 
 /**
  * Response from message handlers

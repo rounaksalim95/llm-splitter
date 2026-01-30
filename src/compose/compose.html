@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Query with LLM Splitter</title>
+    <link rel="stylesheet" href="compose.css" />
+  </head>
+  <body>
+    <div class="compose-container">
+      <header class="compose-header">
+        <h1>Query with LLM Splitter</h1>
+      </header>
+
+      <main class="compose-main">
+        <div class="selected-text-section">
+          <label for="selected-text">Selected Text</label>
+          <div id="selected-text" class="selected-text-preview"></div>
+        </div>
+
+        <div class="prompt-section">
+          <label for="prompt-input">Your Prompt (optional)</label>
+          <textarea
+            id="prompt-input"
+            placeholder="Add your prompt here... (e.g., 'Explain this code', 'Summarize the following')"
+            rows="3"
+            autofocus
+          ></textarea>
+        </div>
+
+        <div class="preview-section">
+          <label>Final Query Preview</label>
+          <div id="query-preview" class="query-preview"></div>
+        </div>
+
+        <div class="providers-section">
+          <label>Send to:</label>
+          <div id="providers-container"></div>
+        </div>
+
+        <div class="submit-section">
+          <button id="submit-btn" disabled>Submit to Selected</button>
+          <button id="cancel-btn" class="btn-secondary">Cancel</button>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="compose.ts"></script>
+  </body>
+</html>

@@ -375,6 +375,52 @@ export async function handleMessage(
 // Track initialization state to prevent duplicate listener registration
 let listenersInitialized = false;
 
+const CONTEXT_MENU_ID = 'llm-splitter-query';
+const SELECTED_TEXT_STORAGE_KEY = 'contextMenuSelectedText';
+
+/**
+ * Creates the context menu item for selected text
+ */
+function createContextMenu(): void {
+  chrome.contextMenus.create({
+    id: CONTEXT_MENU_ID,
+    title: 'Query with LLM Splitter',
+    contexts: ['selection'],
+  });
+}
+
+/**
+ * Handles context menu item clicks
+ */
+async function handleContextMenuClick(
+  info: chrome.contextMenus.OnClickData,
+  _tab?: chrome.tabs.Tab
+): Promise<void> {
+  if (info.menuItemId !== CONTEXT_MENU_ID) {
+    return;
+  }
+
+  const selectedText = info.selectionText?.trim();
+  if (!selectedText) {
+    console.warn('No text selected');
+    return;
+  }
+
+  // Store the selected text for the compose page to read
+  await chrome.storage.local.set({ [SELECTED_TEXT_STORAGE_KEY]: selectedText });
+
+  // Open the compose page in a small popup window
+  const composeUrl = chrome.runtime.getURL('src/compose/compose.html');
+
+  await chrome.windows.create({
+    url: composeUrl,
+    type: 'popup',
+    width: 520,
+    height: 550,
+    focused: true,
+  });
+}
+
 /**
  * Sets up all event listeners. Idempotent - safe to call multiple times.
  */
@@ -395,6 +441,9 @@ export function setupListeners(): void {
     }
   );
 
+  // Context menu click listener
+  chrome.contextMenus.onClicked.addListener(handleContextMenuClick);
+
   listenersInitialized = true;
 
   // Note: Keyboard shortcut to open popup is handled by Chrome's
@@ -410,3 +459,13 @@ export function resetListeners(): void {
 
 // Initialize listeners
 setupListeners();
+
+// Create context menu on extension install/update
+chrome.runtime.onInstalled.addListener(() => {
+  createContextMenu();
+});
+
+// Also create context menu on service worker startup (in case it was terminated)
+chrome.runtime.onStartup?.addListener(() => {
+  createContextMenu();
+});
