@@ -135,8 +135,9 @@ export async function initializePopup(doc: Document = document): Promise<void> {
   // Load data from storage
   const data = await getStorageData();
 
-  // Render UI
-  renderProviderCheckboxes(data.providers, providersContainer);
+  // Render UI - only show enabled providers in popup
+  const enabledProviders = data.providers.filter(p => p.enabled);
+  renderProviderCheckboxes(enabledProviders, providersContainer);
   renderQueryHistory(data.queryHistory, historySelect);
 
   // Set up event listeners
