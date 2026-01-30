@@ -233,7 +233,7 @@ describe('Popup', () => {
   });
 
   describe('initializePopup', () => {
-    it('should load providers from storage', async () => {
+    it('should only load enabled providers from storage', async () => {
       const customData: StorageData = {
         ...DEFAULT_STORAGE_DATA,
         providers: DEFAULT_PROVIDERS.map((p, i) => ({
@@ -247,8 +247,9 @@ describe('Popup', () => {
 
       const container = doc.getElementById('providers-container')!;
       const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+      // Only enabled providers should be rendered in popup
+      expect(checkboxes.length).toBe(1);
       expect((checkboxes[0] as HTMLInputElement).checked).toBe(true);
-      expect((checkboxes[1] as HTMLInputElement).checked).toBe(false);
     });
 
     it('should load history from storage', async () => {

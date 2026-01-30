@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LLM Splitter Settings</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <div class="options-container">
+      <header class="options-header">
+        <h1>LLM Splitter Settings</h1>
+      </header>
+
+      <main class="options-main">
+        <section class="section providers-section">
+          <h2>Providers</h2>
+          <p class="section-hint">Drag to reorder. Toggle to enable/disable.</p>
+          <div id="providers-list" class="providers-list"></div>
+          <div id="providers-warning" class="warning" hidden>
+            At least one provider must be enabled.
+          </div>
+        </section>
+
+        <section class="section shortcut-section">
+          <h2>Keyboard Shortcut</h2>
+          <p class="shortcut-display">
+            Current: <kbd id="shortcut-value">Ctrl+Shift+Q</kbd>
+          </p>
+          <a
+            href="#"
+            id="change-shortcut-link"
+            class="link-button"
+          >
+            Change in Chrome Settings →
+          </a>
+        </section>
+
+        <section class="section history-section">
+          <h2>Query History</h2>
+          <div id="history-list" class="history-list">
+            <p class="empty-state">No queries yet</p>
+          </div>
+          <button id="clear-history-btn" class="btn btn-secondary" disabled>
+            Clear History
+          </button>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="options.ts"></script>
+  </body>
+</html>
