@@ -379,13 +379,16 @@ const CONTEXT_MENU_ID = 'llm-splitter-query';
 const SELECTED_TEXT_STORAGE_KEY = 'contextMenuSelectedText';
 
 /**
- * Creates the context menu item for selected text
+ * Creates the context menu item for selected text.
+ * Uses removeAll() first to handle duplicate creation gracefully.
  */
 function createContextMenu(): void {
-  chrome.contextMenus.create({
-    id: CONTEXT_MENU_ID,
-    title: 'Query with LLM Splitter',
-    contexts: ['selection'],
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: CONTEXT_MENU_ID,
+      title: 'Query with LLM Splitter',
+      contexts: ['selection'],
+    });
   });
 }
 
@@ -460,12 +463,6 @@ export function resetListeners(): void {
 // Initialize listeners
 setupListeners();
 
-// Create context menu on extension install/update
-chrome.runtime.onInstalled.addListener(() => {
-  createContextMenu();
-});
-
-// Also create context menu on service worker startup (in case it was terminated)
-chrome.runtime.onStartup?.addListener(() => {
-  createContextMenu();
-});
+// Create context menu on service worker initialization
+// This handles all cases: install, update, browser restart, extension reload/re-enable
+createContextMenu();

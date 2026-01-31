@@ -200,7 +200,13 @@ export const mockChromeSystemDisplay = {
 export const mockChromeContextMenus = {
   create: vi.fn(() => {}),
   remove: vi.fn(() => Promise.resolve()),
-  removeAll: vi.fn(() => Promise.resolve()),
+  removeAll: vi.fn((callback?: () => void) => {
+    // Support both callback and promise-based usage
+    if (callback) {
+      callback();
+    }
+    return Promise.resolve();
+  }),
   update: vi.fn(() => Promise.resolve()),
   onClicked: {
     addListener: vi.fn(),
