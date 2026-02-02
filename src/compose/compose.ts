@@ -128,7 +128,7 @@ async function handleSubmit(
  * Initializes the compose page
  */
 async function initializeCompose(): Promise<void> {
-  const selectedTextElement = document.getElementById('selected-text') as HTMLElement;
+  const selectedTextInput = document.getElementById('selected-text') as HTMLTextAreaElement;
   const promptInput = document.getElementById('prompt-input') as HTMLTextAreaElement;
   const queryPreview = document.getElementById('query-preview') as HTMLElement;
   const providersContainer = document.getElementById('providers-container') as HTMLElement;
@@ -137,40 +137,43 @@ async function initializeCompose(): Promise<void> {
 
   // Get the selected text from storage
   const result = await chrome.storage.local.get(SELECTED_TEXT_STORAGE_KEY);
-  const selectedText = result[SELECTED_TEXT_STORAGE_KEY] || '';
+  const initialSelectedText = result[SELECTED_TEXT_STORAGE_KEY] || '';
 
-  if (!selectedText) {
-    selectedTextElement.textContent = 'No text selected';
-    submitBtn.disabled = true;
-    return;
-  }
-
-  // Display the selected text
-  selectedTextElement.textContent = selectedText;
+  // Set the selected text in the textarea (editable)
+  selectedTextInput.value = initialSelectedText;
 
   // Load providers from storage
   const data = await getStorageData();
   const enabledProviders = data.providers.filter(p => p.enabled);
   renderProviderCheckboxes(enabledProviders, providersContainer);
 
-  // Initial preview and button state
-  updateQueryPreview(promptInput.value, selectedText, queryPreview);
-  updateSubmitButtonState(selectedText, providersContainer, submitBtn);
+  // Helper to get current selected text value
+  const getSelectedText = () => selectedTextInput.value;
 
-  // Update preview and button state when prompt changes
+  // Initial preview and button state
+  updateQueryPreview(promptInput.value, getSelectedText(), queryPreview);
+  updateSubmitButtonState(getSelectedText(), providersContainer, submitBtn);
+
+  // Update preview and button state when selected text changes
+  selectedTextInput.addEventListener('input', () => {
+    updateQueryPreview(promptInput.value, getSelectedText(), queryPreview);
+    updateSubmitButtonState(getSelectedText(), providersContainer, submitBtn);
+  });
+
+  // Update preview when prompt changes
   promptInput.addEventListener('input', () => {
-    updateQueryPreview(promptInput.value, selectedText, queryPreview);
+    updateQueryPreview(promptInput.value, getSelectedText(), queryPreview);
   });
 
   // Update button state when provider selection changes
   providersContainer.addEventListener('change', () => {
-    updateSubmitButtonState(selectedText, providersContainer, submitBtn);
+    updateSubmitButtonState(getSelectedText(), providersContainer, submitBtn);
   });
 
   // Handle submit
   submitBtn.addEventListener('click', async () => {
     const providerIds = getSelectedProviderIds(providersContainer);
-    const finalQuery = buildFinalQuery(promptInput.value, selectedText);
+    const finalQuery = buildFinalQuery(promptInput.value, getSelectedText());
 
     if (finalQuery && providerIds.length > 0) {
       await handleSubmit(finalQuery, providerIds);
@@ -183,18 +186,21 @@ async function initializeCompose(): Promise<void> {
     window.close();
   });
 
-  // Keyboard shortcut: Ctrl/Cmd+Enter to submit
-  promptInput.addEventListener('keydown', async (e) => {
+  // Keyboard shortcut: Ctrl/Cmd+Enter to submit from either textarea
+  const handleKeyboardSubmit = async (e: KeyboardEvent) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       e.preventDefault();
       const providerIds = getSelectedProviderIds(providersContainer);
-      const finalQuery = buildFinalQuery(promptInput.value, selectedText);
+      const finalQuery = buildFinalQuery(promptInput.value, getSelectedText());
 
       if (finalQuery && providerIds.length > 0) {
         await handleSubmit(finalQuery, providerIds);
       }
     }
-  });
+  };
+
+  selectedTextInput.addEventListener('keydown', handleKeyboardSubmit);
+  promptInput.addEventListener('keydown', handleKeyboardSubmit);
 
   // Escape key to cancel
   document.addEventListener('keydown', async (e) => {

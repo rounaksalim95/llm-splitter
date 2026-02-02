@@ -72,17 +72,31 @@ body {
   color: var(--text-secondary);
 }
 
-.selected-text-preview {
+.selected-text-input {
+  width: 100%;
   padding: 12px;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 6px;
   font-size: 13px;
+  font-family: inherit;
   color: var(--text-primary);
+  min-height: 80px;
   max-height: 120px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.selected-text-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+  .selected-text-input:focus {
+    box-shadow: 0 0 0 2px rgba(77, 166, 255, 0.3);
+  }
 }
 
 #prompt-input {
