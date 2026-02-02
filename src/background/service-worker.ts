@@ -1,11 +1,12 @@
-import type {
-  ExtensionMessage,
-  InjectQueryMessage,
-  MessageResponse,
-  PongMessage,
-  QuerySubmitMessage,
-  WindowPosition,
-  Provider,
+import {
+  type ExtensionMessage,
+  type InjectQueryMessage,
+  type MessageResponse,
+  type PongMessage,
+  type QuerySubmitMessage,
+  type WindowPosition,
+  type Provider,
+  SELECTED_TEXT_STORAGE_KEY,
 } from '../shared/types';
 import { DEFAULT_PROVIDERS, getProviderById } from '../shared/providers';
 import { getStorageData } from '../shared/storage';
@@ -376,7 +377,6 @@ export async function handleMessage(
 let listenersInitialized = false;
 
 const CONTEXT_MENU_ID = 'llm-splitter-query';
-const SELECTED_TEXT_STORAGE_KEY = 'contextMenuSelectedText';
 
 /**
  * Creates the context menu item for selected text.

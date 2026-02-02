@@ -1,7 +1,5 @@
-import type { Provider, QuerySubmitMessage, MessageResponse } from '../shared/types';
+import { type Provider, type QuerySubmitMessage, type MessageResponse, SELECTED_TEXT_STORAGE_KEY } from '../shared/types';
 import { getStorageData, addQueryToHistory } from '../shared/storage';
-
-const SELECTED_TEXT_STORAGE_KEY = 'contextMenuSelectedText';
 
 /**
  * Renders provider checkboxes in the container
@@ -97,12 +95,31 @@ function escapeHtml(text: string): string {
 }
 
 /**
+ * Shows an error message to the user
+ */
+function showError(errorElement: HTMLElement, message: string): void {
+  errorElement.textContent = message;
+  errorElement.hidden = false;
+}
+
+/**
+ * Hides the error message
+ */
+function hideError(errorElement: HTMLElement): void {
+  errorElement.hidden = true;
+  errorElement.textContent = '';
+}
+
+/**
  * Handles form submission
  */
 async function handleSubmit(
   query: string,
-  providerIds: string[]
+  providerIds: string[],
+  errorElement: HTMLElement
 ): Promise<void> {
+  hideError(errorElement);
+
   const message: QuerySubmitMessage = {
     type: 'SUBMIT_QUERY',
     payload: { query, providerIds },
@@ -117,10 +134,14 @@ async function handleSubmit(
       await chrome.storage.local.remove(SELECTED_TEXT_STORAGE_KEY);
       window.close();
     } else {
-      console.error('Submit failed:', response?.error);
+      const errorMsg = response?.error || 'Failed to submit query';
+      console.error('Submit failed:', errorMsg);
+      showError(errorElement, errorMsg);
     }
   } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : 'Failed to send message';
     console.error('Failed to send message:', error);
+    showError(errorElement, errorMsg);
   }
 }
 
@@ -134,6 +155,7 @@ async function initializeCompose(): Promise<void> {
   const providersContainer = document.getElementById('providers-container') as HTMLElement;
   const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
   const cancelBtn = document.getElementById('cancel-btn') as HTMLButtonElement;
+  const errorMessage = document.getElementById('error-message') as HTMLElement;
 
   // Get the selected text from storage
   const result = await chrome.storage.local.get(SELECTED_TEXT_STORAGE_KEY);
@@ -176,7 +198,7 @@ async function initializeCompose(): Promise<void> {
     const finalQuery = buildFinalQuery(promptInput.value, getSelectedText());
 
     if (finalQuery && providerIds.length > 0) {
-      await handleSubmit(finalQuery, providerIds);
+      await handleSubmit(finalQuery, providerIds, errorMessage);
     }
   });
 
@@ -194,7 +216,7 @@ async function initializeCompose(): Promise<void> {
       const finalQuery = buildFinalQuery(promptInput.value, getSelectedText());
 
       if (finalQuery && providerIds.length > 0) {
-        await handleSubmit(finalQuery, providerIds);
+        await handleSubmit(finalQuery, providerIds, errorMessage);
       }
     }
   };

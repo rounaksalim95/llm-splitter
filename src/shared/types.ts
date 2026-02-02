@@ -90,23 +90,9 @@ export interface WindowPosition {
 }
 
 /**
- * Message sent to get the selected text for compose page
- */
-export interface GetSelectedTextMessage {
-  type: 'GET_SELECTED_TEXT';
-}
-
-/**
- * Response containing the selected text
- */
-export interface SelectedTextResponse {
-  selectedText: string;
-}
-
-/**
  * Generic message type for extension communication
  */
-export type ExtensionMessage = QuerySubmitMessage | InjectQueryMessage | PingMessage | GetSelectedTextMessage;
+export type ExtensionMessage = QuerySubmitMessage | InjectQueryMessage | PingMessage;
 
 /**
  * Response from message handlers
@@ -115,3 +101,8 @@ export interface MessageResponse {
   success: boolean;
   error?: string;
 }
+
+/**
+ * Storage key for context menu selected text
+ */
+export const SELECTED_TEXT_STORAGE_KEY = 'contextMenuSelectedText';
