@@ -101,3 +101,8 @@ export interface MessageResponse {
   success: boolean;
   error?: string;
 }
+
+/**
+ * Storage key for context menu selected text
+ */
+export const SELECTED_TEXT_STORAGE_KEY = 'contextMenuSelectedText';

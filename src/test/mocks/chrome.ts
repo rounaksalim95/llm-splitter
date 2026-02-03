@@ -61,7 +61,18 @@ export const mockChromeRuntime = {
     removeListener: vi.fn(),
     hasListener: vi.fn(() => false),
   },
+  onInstalled: {
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    hasListener: vi.fn(() => false),
+  },
+  onStartup: {
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    hasListener: vi.fn(() => false),
+  },
   getURL: vi.fn((path: string) => `chrome-extension://mock-id/${path}`),
+  openOptionsPage: vi.fn(() => Promise.resolve()),
   lastError: null as chrome.runtime.LastError | null,
 };
 
@@ -185,6 +196,25 @@ export const mockChromeSystemDisplay = {
   ),
 };
 
+// Mock Chrome contextMenus API
+export const mockChromeContextMenus = {
+  create: vi.fn(() => {}),
+  remove: vi.fn(() => Promise.resolve()),
+  removeAll: vi.fn((callback?: () => void) => {
+    // Support both callback and promise-based usage
+    if (callback) {
+      callback();
+    }
+    return Promise.resolve();
+  }),
+  update: vi.fn(() => Promise.resolve()),
+  onClicked: {
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    hasListener: vi.fn(() => false),
+  },
+};
+
 // Combined Chrome mock
 export const mockChrome = {
   storage: mockChromeStorage,
@@ -193,6 +223,7 @@ export const mockChrome = {
   windows: mockChromeWindows,
   tabs: mockChromeTabs,
   action: mockChromeAction,
+  contextMenus: mockChromeContextMenus,
   system: {
     display: mockChromeSystemDisplay,
   },

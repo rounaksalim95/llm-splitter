@@ -1,11 +1,12 @@
-import type {
-  ExtensionMessage,
-  InjectQueryMessage,
-  MessageResponse,
-  PongMessage,
-  QuerySubmitMessage,
-  WindowPosition,
-  Provider,
+import {
+  type ExtensionMessage,
+  type InjectQueryMessage,
+  type MessageResponse,
+  type PongMessage,
+  type QuerySubmitMessage,
+  type WindowPosition,
+  type Provider,
+  SELECTED_TEXT_STORAGE_KEY,
 } from '../shared/types';
 import { DEFAULT_PROVIDERS, getProviderById } from '../shared/providers';
 import { getStorageData } from '../shared/storage';
@@ -375,6 +376,54 @@ export async function handleMessage(
 // Track initialization state to prevent duplicate listener registration
 let listenersInitialized = false;
 
+const CONTEXT_MENU_ID = 'llm-splitter-query';
+
+/**
+ * Creates the context menu item for selected text.
+ * Uses removeAll() first to handle duplicate creation gracefully.
+ */
+function createContextMenu(): void {
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({
+      id: CONTEXT_MENU_ID,
+      title: 'Query with LLM Splitter',
+      contexts: ['selection'],
+    });
+  });
+}
+
+/**
+ * Handles context menu item clicks
+ */
+async function handleContextMenuClick(
+  info: chrome.contextMenus.OnClickData,
+  _tab?: chrome.tabs.Tab
+): Promise<void> {
+  if (info.menuItemId !== CONTEXT_MENU_ID) {
+    return;
+  }
+
+  const selectedText = info.selectionText?.trim();
+  if (!selectedText) {
+    console.warn('No text selected');
+    return;
+  }
+
+  // Store the selected text for the compose page to read
+  await chrome.storage.local.set({ [SELECTED_TEXT_STORAGE_KEY]: selectedText });
+
+  // Open the compose page in a small popup window
+  const composeUrl = chrome.runtime.getURL('src/compose/compose.html');
+
+  await chrome.windows.create({
+    url: composeUrl,
+    type: 'popup',
+    width: 520,
+    height: 550,
+    focused: true,
+  });
+}
+
 /**
  * Sets up all event listeners. Idempotent - safe to call multiple times.
  */
@@ -395,6 +444,9 @@ export function setupListeners(): void {
     }
   );
 
+  // Context menu click listener
+  chrome.contextMenus.onClicked.addListener(handleContextMenuClick);
+
   listenersInitialized = true;
 
   // Note: Keyboard shortcut to open popup is handled by Chrome's
@@ -410,3 +462,7 @@ export function resetListeners(): void {
 
 // Initialize listeners
 setupListeners();
+
+// Create context menu on service worker initialization
+// This handles all cases: install, update, browser restart, extension reload/re-enable
+createContextMenu();
