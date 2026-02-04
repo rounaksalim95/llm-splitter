@@ -125,10 +125,18 @@ export async function initializePopup(doc: Document = document): Promise<void> {
   const submitBtn = doc.getElementById('submit-btn') as HTMLButtonElement;
   const settingsBtn = doc.getElementById('settings-btn') as HTMLButtonElement;
 
-  // Settings button opens options page
+  // Settings button opens options page in a normal browser window
   if (settingsBtn) {
-    settingsBtn.addEventListener('click', () => {
-      chrome.runtime.openOptionsPage();
+    settingsBtn.addEventListener('click', async () => {
+      const optionsUrl = chrome.runtime.getURL('src/options/options.html');
+      // Find an existing normal browser window to open the tab in
+      const windows = await chrome.windows.getAll({ windowTypes: ['normal'] });
+      if (windows.length > 0) {
+        await chrome.tabs.create({ url: optionsUrl, windowId: windows[0].id });
+        await chrome.windows.update(windows[0].id!, { focused: true });
+      } else {
+        await chrome.windows.create({ url: optionsUrl, type: 'normal' });
+      }
     });
   }
 

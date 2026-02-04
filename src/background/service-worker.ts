@@ -376,6 +376,9 @@ export async function handleMessage(
 // Track initialization state to prevent duplicate listener registration
 let listenersInitialized = false;
 
+// Track the popup window ID for toggle behavior
+let popupWindowId: number | null = null;
+
 const CONTEXT_MENU_ID = 'llm-splitter-query';
 
 /**
@@ -425,6 +428,54 @@ async function handleContextMenuClick(
 }
 
 /**
+ * Toggles the popup window open/closed
+ */
+async function togglePopup(): Promise<void> {
+  // If we have a tracked window ID, check if it still exists
+  if (popupWindowId !== null) {
+    try {
+      await chrome.windows.get(popupWindowId);
+      // Window exists, close it
+      await chrome.windows.remove(popupWindowId);
+      popupWindowId = null;
+      return;
+    } catch {
+      // Window doesn't exist (user closed it manually), reset state
+      popupWindowId = null;
+    }
+  }
+
+  // Get screen dimensions to position popup in top right
+  const screen = await getScreenDimensions();
+
+  // Size popup to fit content snugly
+  // Width: 350px content + minimal window chrome
+  // Height: sized to fit content without scrollbar
+  const popupWidth = 350;
+  const popupHeight = 480;
+
+  // Position in top right corner
+  const left = screen.left + screen.width - popupWidth;
+  const top = screen.top;
+
+  // No popup window exists, create one
+  const popupUrl = chrome.runtime.getURL('src/popup/popup.html');
+  const window = await chrome.windows.create({
+    url: popupUrl,
+    type: 'popup',
+    width: popupWidth,
+    height: popupHeight,
+    left: left,
+    top: top,
+    focused: true,
+  });
+
+  if (window.id) {
+    popupWindowId = window.id;
+  }
+}
+
+/**
  * Sets up all event listeners. Idempotent - safe to call multiple times.
  */
 export function setupListeners(): void {
@@ -447,10 +498,26 @@ export function setupListeners(): void {
   // Context menu click listener
   chrome.contextMenus.onClicked.addListener(handleContextMenuClick);
 
-  listenersInitialized = true;
+  // Extension icon click listener (triggers toggle)
+  chrome.action.onClicked.addListener(() => {
+    togglePopup();
+  });
 
-  // Note: Keyboard shortcut to open popup is handled by Chrome's
-  // built-in _execute_action command in manifest.json
+  // Keyboard shortcut listener for toggle-popup command
+  chrome.commands.onCommand.addListener((command) => {
+    if (command === 'toggle-popup') {
+      togglePopup();
+    }
+  });
+
+  // Track when popup window is closed by any means (user clicks X, etc.)
+  chrome.windows.onRemoved.addListener((windowId) => {
+    if (windowId === popupWindowId) {
+      popupWindowId = null;
+    }
+  });
+
+  listenersInitialized = true;
 }
 
 /**

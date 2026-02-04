@@ -11,7 +11,6 @@
     "https://grok.com/*"
   ],
   "action": {
-    "default_popup": "src/popup/popup.html",
     "default_icon": {
       "16": "src/icons/icon16.png",
       "32": "src/icons/icon32.png",
@@ -24,12 +23,12 @@
     "type": "module"
   },
   "commands": {
-    "_execute_action": {
+    "toggle-popup": {
       "suggested_key": {
         "default": "Ctrl+Shift+Q",
         "mac": "Ctrl+Shift+Q"
       },
-      "description": "Open LLM Splitter popup"
+      "description": "Toggle LLM Splitter popup"
     }
   },
   "icons": {
