@@ -26,7 +26,7 @@
     "toggle-popup": {
       "suggested_key": {
         "default": "Ctrl+Shift+L",
-        "mac": "Ctrl+Shift+L"
+        "mac": "MacCtrl+Shift+L"
       },
       "description": "Toggle LLM Splitter popup"
     }
