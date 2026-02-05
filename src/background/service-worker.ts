@@ -419,7 +419,7 @@ async function handleContextMenuClick(
   const composeUrl = chrome.runtime.getURL('src/compose/compose.html');
   const screen = await getScreenDimensions();
   const composeWidth = 520;
-  const composeHeight = 550;
+  const composeHeight = 700;
 
   await chrome.windows.create({
     url: composeUrl,
