@@ -9,7 +9,7 @@ export const DEFAULT_STORAGE_DATA: StorageData = {
   queryHistory: [],
   settings: {
     maxHistoryItems: 50,
-    keyboardShortcut: 'Ctrl+Shift+Q',
+    keyboardShortcut: 'Ctrl+Shift+L',
     defaultLayout: 'grid',
   },
 };

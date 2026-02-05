@@ -21,7 +21,7 @@ Key features:
 
 • Side-by-side window layout — Browser windows are automatically arranged so you can compare responses at a glance.
 
-• Keyboard shortcut — Press Ctrl+Shift+Q (customizable) to open the query popup from any tab.
+• Keyboard shortcut — Press Ctrl+Shift+L (customizable) to open the query popup from any tab.
 
 • Right-click context menu — Select text on any page and send it to your chosen providers via the context menu.
 

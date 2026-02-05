@@ -34,12 +34,12 @@ describe('Types', () => {
     it('should have all required properties', () => {
       const settings: Settings = {
         maxHistoryItems: 50,
-        keyboardShortcut: 'Ctrl+Shift+Q',
+        keyboardShortcut: 'Ctrl+Shift+L',
         defaultLayout: 'grid',
       };
 
       expect(settings.maxHistoryItems).toBe(50);
-      expect(settings.keyboardShortcut).toBe('Ctrl+Shift+Q');
+      expect(settings.keyboardShortcut).toBe('Ctrl+Shift+L');
       expect(settings.defaultLayout).toBe('grid');
     });
   });
@@ -51,7 +51,7 @@ describe('Types', () => {
         queryHistory: [],
         settings: {
           maxHistoryItems: 50,
-          keyboardShortcut: 'Ctrl+Shift+Q',
+          keyboardShortcut: 'Ctrl+Shift+L',
           defaultLayout: 'grid',
         },
       };

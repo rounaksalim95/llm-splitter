@@ -25,7 +25,7 @@ describe('Storage', () => {
 
     it('should have default settings', () => {
       expect(DEFAULT_STORAGE_DATA.settings.maxHistoryItems).toBe(50);
-      expect(DEFAULT_STORAGE_DATA.settings.keyboardShortcut).toBe('Ctrl+Shift+Q');
+      expect(DEFAULT_STORAGE_DATA.settings.keyboardShortcut).toBe('Ctrl+Shift+L');
       expect(DEFAULT_STORAGE_DATA.settings.defaultLayout).toBe('grid');
     });
   });
@@ -206,7 +206,7 @@ describe('Storage', () => {
 
       const settings = await getSettings();
       expect(settings.maxHistoryItems).toBe(100);
-      expect(settings.keyboardShortcut).toBe('Ctrl+Shift+Q'); // unchanged
+      expect(settings.keyboardShortcut).toBe('Ctrl+Shift+L'); // unchanged
     });
 
     it('should update multiple settings at once', async () => {

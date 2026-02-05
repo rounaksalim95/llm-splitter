@@ -7,7 +7,7 @@ LLM Splitter is a Chrome extension that allows users to input a single query and
 
 ### 1. Query Input
 - **Toolbar Popup**: Click extension icon to open popup with query input field
-- **Keyboard Shortcut**: Configurable hotkey (default: `Ctrl+Shift+Q` on all platforms)
+- **Keyboard Shortcut**: Configurable hotkey (default: `Ctrl+Shift+L` on all platforms)
 - **Query History**: Store recent queries with ability to select/modify previous queries
 
 ### 2. Provider Management
@@ -155,7 +155,7 @@ interface StorageData {
 ### Phase 1: Query Input (Complete)
 - Popup UI with query textarea, provider checkboxes, history dropdown
 - Query history with deduplication and persistence
-- Keyboard shortcut (Ctrl+Shift+Q) to open popup
+- Keyboard shortcut (Ctrl+Shift+L) to open popup
 - Service worker receives SUBMIT_QUERY messages
 
 ### Phase 2: Window Management + Query Execution (Complete)
@@ -176,7 +176,7 @@ interface StorageData {
 - Settings button in popup opens options page
 
 ## TODO
-- [ ] **Customizable Keyboard Shortcut**: Add UI in settings page to allow users to configure the keyboard shortcut (currently hardcoded to `Ctrl+Shift+Q`). Note: `Cmd+Shift+Q` conflicts with macOS system shortcut for quitting applications. Currently, users can change shortcuts via Chrome's built-in `chrome://extensions/shortcuts` page.
+- [ ] **Customizable Keyboard Shortcut**: Add UI in settings page to allow users to configure the keyboard shortcut (currently hardcoded to `Ctrl+Shift+L`). Note: `Cmd+Shift+Q` conflicts with macOS system shortcut for quitting applications. Currently, users can change shortcuts via Chrome's built-in `chrome://extensions/shortcuts` page.
 - [x] **Options Page**: Implement settings UI for provider management (toggle, reorder, query history, theme support)
 
 ## Verification Plan
