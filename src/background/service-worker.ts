@@ -415,14 +415,19 @@ async function handleContextMenuClick(
   // Store the selected text for the compose page to read
   await chrome.storage.local.set({ [SELECTED_TEXT_STORAGE_KEY]: selectedText });
 
-  // Open the compose page in a small popup window
+  // Open the compose page in a small popup window, positioned in the top right
   const composeUrl = chrome.runtime.getURL('src/compose/compose.html');
+  const screen = await getScreenDimensions();
+  const composeWidth = 520;
+  const composeHeight = 550;
 
   await chrome.windows.create({
     url: composeUrl,
     type: 'popup',
-    width: 520,
-    height: 550,
+    width: composeWidth,
+    height: composeHeight,
+    left: screen.left + screen.width - composeWidth,
+    top: screen.top,
     focused: true,
   });
 }
