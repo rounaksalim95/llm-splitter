@@ -44,7 +44,6 @@ Productivity
 |---|---|
 | `storage` | Stores user preferences, selected providers, and query history locally on the device. |
 | `activeTab` | Accesses the currently active tab to inject the query popup UI. |
-| `scripting` | Injects content scripts into LLM provider pages to programmatically enter and submit queries. |
 | `tabs` | Opens and arranges LLM provider tabs/windows in a side-by-side layout. |
 | `system.display` | Reads display dimensions to calculate optimal side-by-side window positions. |
 | `contextMenus` | Adds a right-click context menu item to send selected text to LLM providers. |
