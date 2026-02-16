@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "LLM Splitter",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Split your queries across multiple LLM providers",
   "permissions": ["storage", "activeTab", "system.display", "contextMenus"],
   "host_permissions": [
